@@ -21,7 +21,17 @@ INSERT INTO Employee VALUES (3,'Anurag', 6500, 'male', 1)
 INSERT INTO Employee VALUES (4,'sambit', 4700, 'Male', 2)
 INSERT INTO Employee VALUES (5,'Hina', 6600, 'Female', 3)
 
-select * from Employee;
+CREATE TABLE Department
+(
+  ID INT PRIMARY KEY,
+  Name VARCHAR(50)
+)
+GO
+-- Populate the Department Table with test data
+INSERT INTO Department VALUES(1, 'IT')
+INSERT INTO Department VALUES(2, 'HR')
+INSERT INTO Department VALUES(3, 'Sales')
+
 
 -- Create EmployeeAudit Table
 CREATE TABLE EmployeeAudit
@@ -151,3 +161,41 @@ where ID = 5;
 
 select * from Employee;
 Select * from EmployeeAudit;
+
+
+
+----------------- instead of--------------------
+create view vwEmployeeDetails
+as
+select emp.ID, emp.Name, emp.Salary, emp.Gender, dept.Name as Department
+from Employee emp
+inner join Department dept
+on emp.DepartmentId = dept.ID;
+
+select * from vwEmployeeDetails;
+
+insert into vwEmployeeDetails values (6,'Raj',50000,'Male','IT');  -- its make error
+--overcome this error we can create the instead of trigger
+
+create trigger trVWEmployeeDetails
+on vwEmployeeDetails
+instead of insert
+as 
+begin
+	declare @DepartmentID int
+	select @DepartmentID = dept.ID from Department dept
+	inner join inserted inst
+	on inst.Department = dept.Name
+
+	if(@DepartmentID = null)
+	begin
+		raiserror('Invalid Department name',16,1)
+	end
+
+	insert into Employee(ID,Name,Salary,Gender,DepartmentId)
+	select ID,Name,Salary,Gender,@DepartmentID
+	from inserted
+end
+
+
+
