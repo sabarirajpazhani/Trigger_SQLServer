@@ -74,3 +74,80 @@ where Id = 6;
 
 select * from Employee;
 Select * from EmployeeAudit;
+
+
+--AFTER TRIGGER for UPDATE Event in SQL Server
+create trigger tgUpdateEmployee
+on Employee
+after update
+as begin
+	declare @ID int
+	declare @OldName varchar(200), @NewName varchar(200)
+	declare @OldSalary int, @NewSalary int
+	declare @OldGender varchar(40), @NewGender varchar(40)
+	declare @OldDepartmentID int, @NewDepartmentID int
+
+	declare @AuditData varchar(max)
+
+	select * into #EmployeeTempTable from inserted
+
+	while(Exists(select ID from #EmployeeTempTable))
+	begin
+		set @AuditData= ''
+
+		select Top 1  
+			@ID = ID,
+			@NewName = Name,
+			@NewSalary = Salary,
+			@NewGender = Gender,
+			@NewDepartmentID = DepartmentID
+		from #EmployeeTempTable
+
+		select 
+			@OldName = Name,
+			@OldSalary = Salary,
+			@OldGender = Gender,
+			@OldDepartmentID = DepartmentID
+		from deleted where ID = @ID
+
+
+		set @AuditData = 'Employee with id - '+cast(@ID as varchar(30)) + 'changed'
+
+		if(@OldName <> @NewName)
+		begin
+		 set @AuditData = @AuditData + 'Name from '+cast(@OldName as varchar(30))+ ' to '+@NewName
+		end
+
+		if(@OldSalary <> @NewSalary)
+		begin
+			set @AuditData = @AuditData + 'Salary from ' + cast(@OldSalary as varchar(30)) + ' to ' + cast(@NewSalary as varchar(30))
+		end
+
+		if(@OldGender <> @NewGender)
+		begin
+			set @AuditData = @AuditData + 'Gender from '+cast(@OldGender as varchar(30))+ ' to '+@NewGender
+		end
+
+		if(@OldDepartmentID <> @NewDepartmentID)
+		begin
+			set @AuditData = @AuditData + 'Department ID from '+cast(@OldDepartmentID as varchar(30))+ ' to '+cast(@NewDepartmentID as varchar(30))
+		end
+
+		insert into EmployeeAudit values (@AuditData, Getdate())
+
+		delete from #EmployeeTempTable where ID = @ID
+
+	end
+end
+
+
+DROP TRIGGER tgUpdateEmployee;
+
+
+update Employee
+set Salary = 10000
+where ID = 5;
+
+
+select * from Employee;
+Select * from EmployeeAudit;
