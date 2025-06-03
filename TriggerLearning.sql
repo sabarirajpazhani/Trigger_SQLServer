@@ -52,3 +52,25 @@ insert into Employee values(6,'Sabari',8000, 'Male',2);
 
 select * from Employee;
 Select * from EmployeeAudit;
+
+--AFTER TRIGGER for DELETE Event in SQL Server
+create trigger tgDeleteEmployee
+on Employee
+after delete 
+as
+begin
+	declare @ID int
+	declare @Name varchar(max)
+	declare @AuditData varchar(100)
+
+	select @ID = Id, @Name = Name from DELETED
+	set @AuditData = 'Employee Deleted with ID - '+cast(@ID as varchar(10))+' and Name - '+@Name
+
+	insert into EmployeeAudit values(@AuditData,Getdate());
+end
+
+delete from Employee
+where Id = 6;
+
+select * from Employee;
+Select * from EmployeeAudit;
