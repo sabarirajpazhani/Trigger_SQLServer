@@ -22,3 +22,12 @@ INSERT INTO Employee VALUES (4,'sambit', 4700, 'Male', 2)
 INSERT INTO Employee VALUES (5,'Hina', 6600, 'Female', 3)
 
 select * from Employee;
+
+-- Create EmployeeAudit Table
+CREATE TABLE EmployeeAudit
+(
+  ID INT IDENTITY(1,1) PRIMARY KEY,
+  AuditData VARCHAR(MAX),
+  AuditDate DATETIME
+)
+
