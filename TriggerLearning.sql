@@ -31,3 +31,24 @@ CREATE TABLE EmployeeAudit
   AuditDate DATETIME
 )
 
+
+--creating the AFTER TRIGGER for INSERT
+create trigger trInsertEmployee
+on Employee
+after insert
+as
+begin
+	declare @ID int
+	declare @Name varchar(100)
+	declare @AuditData varchar(MAX)
+	select @ID = ID ,@Name = Name from Inserted
+	set @AuditData = 'New Employee Added with ID - '+ cast(@ID as varchar(10))+' and Name - '+@Name
+
+	insert into EmployeeAudit(AuditData,AuditDate)
+	values (@AuditData,Getdate())
+end
+
+insert into Employee values(6,'Sabari',8000, 'Male',2);
+
+select * from Employee;
+Select * from EmployeeAudit;
