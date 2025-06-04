@@ -176,7 +176,7 @@ select * from vwEmployeeDetails;
 
 insert into vwEmployeeDetails values (6,'Raj',50000,'Male','IT');  -- its make error
 --overcome this error we can create the instead of trigger
-
+--INSTEAD OF INSERT Trigger in SQL Server
 create trigger trVWEmployeeDetails
 on vwEmployeeDetails
 instead of insert
@@ -198,4 +198,66 @@ begin
 end
 
 
+--Instead Of Update Trigger in SQL Server
+create trigger trVWInsteadOfUpdate
+on vwEmployeeDetails
+instead of update
+as
+begin
+	--if EmployeeID is updated
+	if(update(Id))
+	begin
+		raiserror('ID cannot be changed',16,1)
+		return
+	end
 
+	--if Departmemnt is updated
+	if(update(Department))
+	begin
+		declare @DepartmentID int
+		select @DepartmentID = dept.ID
+		from Department dept
+		inner join inserted inst
+		on dept.Name = inst.Department
+
+		if(@DepartmentID is Null)
+		begin
+			raiserror('Ivalide Department Name',16,1)
+			return
+		end
+
+		update Employee 
+		set DepartmentId = @DepartmentID
+		from inserted
+		inner join Employee
+		on Employee.Id = inserted.ID
+	end
+
+	--if gender is updated
+	if(update(Gender))
+	begin
+		update Employee 
+		set Gender = inst.Gender
+		from inserted inst
+		inner join Employee
+		on Employee.Id = inst.ID
+	end
+
+	-- if salary is updated
+	if(update(Salary))
+	begin
+		update Employee
+		set Salary = inserted.Salary
+		from inserted
+		inner join Employee
+		on Employee.Id = inserted.ID
+	end
+end
+
+update vwEmployeeDetails
+set Salary = 6000
+where Id = 1;
+
+select * from Employee;
+Select * from EmployeeAudit;
+select * from Department;
