@@ -261,3 +261,21 @@ where Id = 1;
 select * from Employee;
 Select * from EmployeeAudit;
 select * from Department;
+
+--Instead Of Delete Trigger in SQL Server
+create trigger trvwInsteadOfDelete
+on vwEmployeeDetails
+instead of delete
+as
+begin
+	delete from Employee
+	from Employee emp
+	inner join deleted del
+	on emp.Id = del.Id
+end
+
+delete from vwEmployeeDetails
+where ID =6;
+
+select * from Employee;
+select * from vwEmployeeDetails;
